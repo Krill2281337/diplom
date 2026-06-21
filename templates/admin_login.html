@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Вход администратора — Ёлы-Палы</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favorite.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="admin-body">
+  <main class="admin-login-shell">
+    <section class="login-hero">
+      <div>
+        <span class="eyebrow">Ёлы-Палы</span>
+        <h1>Панель администратора</h1>
+        <p>Здесь администратор может обрабатывать заявки на бронирование, менять статусы, смотреть статистику и выгружать данные для отчётности.</p>
+      </div>
+      <div class="login-features">
+        <span>База заявок</span>
+        <span>Статусы</span>
+        <span>Фильтры</span>
+        <span>Экспорт CSV</span>
+      </div>
+    </section>
+
+    <section class="login-panel">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-wrap">
+            {% for category, message in messages %}
+              <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <span class="eyebrow">Авторизация</span>
+      <h2>Вход в систему</h2>
+      <p class="section-lead left-text">Введите данные администратора для доступа к заявкам.</p>
+
+      <form class="booking-form" method="post" action="{{ url_for('admin_login') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label for="username">Логин</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-primary btn-full" type="submit">Войти в админ-панель</button>
+        <a class="link-button" href="{{ url_for('index') }}">Вернуться на сайт</a>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

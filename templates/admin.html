@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Администратор — Ёлы-Палы</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favorite.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="admin-body admin-body-pro">
+  <main class="admin-dashboard pro-dashboard">
+    <aside class="admin-sidebar pro-sidebar">
+      <div class="admin-brand-mini pro-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Ёлы-Палы">
+        <div>
+          <strong>Ёлы-Палы</strong>
+          <span>Управление бронями</span>
+        </div>
+      </div>
+
+      <nav class="admin-menu pro-menu">
+        <a class="active" href="{{ url_for('admin_panel') }}"><span class="menu-dot"></span> Заявки</a>
+        <a href="{{ url_for('admin_catalog') }}"><span class="menu-dot"></span> Размещение и услуги</a>
+        <a href="{{ url_for('index') }}"><span class="menu-dot"></span> Открыть сайт</a>
+        <a href="{{ url_for('export_bookings', status=filters.status, cottage=filters.cottage, q=filters.q, date_from=filters.date_from, date_to=filters.date_to) }}"><span class="menu-dot"></span> Экспорт CSV</a>
+        <a href="{{ url_for('admin_logout') }}"><span class="menu-dot"></span> Выйти</a>
+      </nav>
+
+      <div class="sidebar-user-card">
+        <div class="user-avatar">{{ (session.get('admin_username', 'A')[:1] or 'A')|upper }}</div>
+        <div>
+          <strong>{{ session.get('admin_username', 'Администратор') }}</strong>
+          <span>Активная сессия</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="admin-content pro-content">
+      <header class="pro-admin-header">
+        <div>
+          <span class="eyebrow">Панель администратора</span>
+          <h1>Заявки на бронирование</h1>
+          <p>Обработка обращений гостей, контроль дат заезда, статусы заявок и выгрузка данных.</p>
+        </div>
+        <div class="pro-header-actions">
+          <a class="btn btn-secondary" href="{{ url_for('index') }}">Открыть сайт</a>
+          <a class="btn btn-primary" href="{{ url_for('export_bookings', status=filters.status, cottage=filters.cottage, q=filters.q, date_from=filters.date_from, date_to=filters.date_to) }}">Экспорт CSV</a>
+        </div>
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-wrap admin-flashes">
+            {% for category, message in messages %}
+              <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <section class="pro-summary-grid">
+        <article class="pro-summary-card dark-card">
+          <span>Всего заявок</span>
+          <strong>{{ totals.total_bookings }}</strong>
+          <small>за весь период</small>
+        </article>
+        <article class="pro-summary-card blue-card">
+          <span>Новые заявки</span>
+          <strong>{{ stats['Новая'] }}</strong>
+          <small>требуют обработки</small>
+        </article>
+        <article class="pro-summary-card green-card">
+          <span>Подтверждено</span>
+          <strong>{{ stats['Подтверждена'] }}</strong>
+          <small>{{ totals.confirmed_nights }} ночей</small>
+        </article>
+        <article class="pro-summary-card red-card">
+          <span>Отклонено</span>
+          <strong>{{ stats['Отклонена'] }}</strong>
+          <small>закрытые обращения</small>
+        </article>
+        <article class="pro-summary-card money-card">
+          <span>Выручка</span>
+          <strong>{{ '{:,}'.format(totals.confirmed_sum|int).replace(',', ' ') }} ₽</strong>
+          <small>по подтвержденным</small>
+        </article>
+        <article class="pro-summary-card violet-card">
+          <span>Конверсия</span>
+          <strong>{{ overview.conversion_rate }}%</strong>
+          <small>подтвержденных заявок</small>
+        </article>
+      </section>
+
+      <section class="admin-filter-card pro-filter-card">
+        <div class="filter-title-row">
+          <div>
+            <h2>Фильтры и поиск</h2>
+            <p>Быстрый отбор по имени, телефону, варианту размещения, статусу и дате заезда.</p>
+          </div>
+          {% if active_filter_count %}
+            <span class="filter-count">Активно: {{ active_filter_count }}</span>
+          {% endif %}
+        </div>
+        <form class="admin-filter-form pro-filter-form" method="get" action="{{ url_for('admin_panel') }}">
+          <label>
+            <span>Поиск</span>
+            <input name="q" type="search" value="{{ filters.q }}" placeholder="Имя, телефон, комментарий">
+          </label>
+          <label>
+            <span>Статус</span>
+            <select name="status">
+              <option value="all" {% if filters.status == 'all' %}selected{% endif %}>Все статусы</option>
+              {% for status in statuses %}
+                <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Размещение</span>
+            <select name="cottage">
+              <option value="all" {% if filters.cottage == 'all' %}selected{% endif %}>Все варианты</option>
+              {% for room_name in rooms.keys() %}
+                <option value="{{ room_name }}" {% if filters.cottage == room_name %}selected{% endif %}>{{ room_name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Заезд от</span>
+            <input name="date_from" type="date" value="{{ filters.date_from }}">
+          </label>
+          <label>
+            <span>Заезд до</span>
+            <input name="date_to" type="date" value="{{ filters.date_to }}">
+          </label>
+          <div class="filter-buttons">
+            <button class="btn btn-primary" type="submit">Применить</button>
+            <a class="btn btn-secondary" href="{{ url_for('admin_panel') }}">Сбросить</a>
+          </div>
+        </form>
+      </section>
+
+      <div class="pro-admin-layout">
+        <section class="admin-bookings-panel pro-bookings-panel">
+          <div class="panel-head pro-panel-head">
+            <div>
+              <h2>Список заявок</h2>
+              <p>Найдено: {{ bookings|length }}</p>
+            </div>
+            <div class="status-tabs pro-status-tabs">
+              <a href="{{ url_for('admin_panel') }}" class="{% if filters.status == 'all' %}active{% endif %}">Все</a>
+              {% for status in statuses %}
+                <a href="{{ url_for('admin_panel', status=status, cottage=filters.cottage, q=filters.q, date_from=filters.date_from, date_to=filters.date_to) }}" class="{% if filters.status == status %}active{% endif %}">{{ status }}</a>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="booking-card-list pro-booking-list">
+            {% for booking in bookings %}
+              <article class="admin-booking-card pro-booking-card">
+                <div class="booking-card-head">
+                  <div>
+                    <div class="booking-id">Заявка №{{ booking.id }}</div>
+                    <h3>{{ booking.guest_name }}</h3>
+                    <div class="booking-contact-line">
+                      <a class="phone-link" href="tel:{{ booking.phone }}">{{ booking.phone }}</a>
+                      <span>{{ booking.created_at }}</span>
+                    </div>
+                  </div>
+                  <div class="booking-head-right">
+                    <span class="status-badge {% if booking.status == 'Новая' %}status-new{% elif booking.status == 'Подтверждена' %}status-confirmed{% else %}status-rejected{% endif %}">{{ booking.status }}</span>
+                    <strong>{{ '{:,}'.format(booking.total_price).replace(',', ' ') }} ₽</strong>
+                  </div>
+                </div>
+
+                <div class="booking-info-grid pro-info-grid">
+                  <div><span>Размещение</span><strong>{{ booking.cottage }}</strong></div>
+                  <div><span>Заезд</span><strong>{{ booking.check_in }}</strong></div>
+                  <div><span>Выезд</span><strong>{{ booking.check_out }}</strong></div>
+                  <div><span>Ночей</span><strong>{{ booking.nights }}</strong></div>
+                  <div><span>Гостей</span><strong>{{ booking.guests }}</strong></div>
+                  <div><span>Услуги</span><strong>{{ booking.extras or '—' }}</strong></div>
+                </div>
+
+                {% if booking.comment %}
+                  <div class="booking-comment">
+                    <span>Комментарий гостя</span>
+                    <p>{{ booking.comment }}</p>
+                  </div>
+                {% endif %}
+
+                <div class="booking-actions-row pro-actions-row">
+                  <form method="post" action="{{ url_for('update_booking_status', booking_id=booking.id) }}" class="quick-status-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="Подтверждена">
+                    <button class="quick-action confirm" type="submit" {% if booking.status == 'Подтверждена' %}disabled{% endif %}>Подтвердить</button>
+                  </form>
+                  <form method="post" action="{{ url_for('update_booking_status', booking_id=booking.id) }}" class="quick-status-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="Новая">
+                    <button class="quick-action new" type="submit" {% if booking.status == 'Новая' %}disabled{% endif %}>В новые</button>
+                  </form>
+                  <form method="post" action="{{ url_for('update_booking_status', booking_id=booking.id) }}" class="quick-status-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="Отклонена">
+                    <button class="quick-action reject" type="submit" {% if booking.status == 'Отклонена' %}disabled{% endif %}>Отклонить</button>
+                  </form>
+                  <form method="post" action="{{ url_for('delete_booking', booking_id=booking.id) }}" onsubmit="return confirm('Удалить заявку №{{ booking.id }}?');" class="quick-status-form push-right">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <button class="quick-action delete" type="submit">Удалить</button>
+                  </form>
+                </div>
+              </article>
+            {% else %}
+              <div class="admin-empty-state pro-empty-state">
+                <div class="empty-icon">Нет данных</div>
+                <h3>Заявки не найдены</h3>
+                <p>Измените фильтры или сбросьте поиск, чтобы увидеть весь список.</p>
+                <a class="btn btn-primary" href="{{ url_for('admin_panel') }}">Показать все заявки</a>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <aside class="admin-side-panels pro-side-panels">
+          <section class="side-panel compact-metrics-panel">
+            <h2>Оперативно</h2>
+            <div class="mini-metric-grid">
+              <div><span>Сегодня заездов</span><strong>{{ overview.arrivals_today }}</strong></div>
+              <div><span>Сегодня выездов</span><strong>{{ overview.departures_today }}</strong></div>
+              <div><span>Сейчас проживают</span><strong>{{ overview.active_guests }}</strong></div>
+              <div><span>Средний чек</span><strong>{{ '{:,}'.format(overview.average_confirmed_price|int).replace(',', ' ') }} ₽</strong></div>
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <h2>Занятость сегодня</h2>
+            <div class="room-today-list">
+              {% for item in room_today_status %}
+                <div class="room-today-item {% if item.status == 'Свободно' %}free{% else %}busy{% endif %}">
+                  <div>
+                    <strong>{{ item.room }}</strong>
+                    <span>{{ item.note }}</span>
+                  </div>
+                  <em>{{ item.status }}</em>
+                </div>
+              {% endfor %}
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <h2>Ближайшие заезды</h2>
+            {% if upcoming_bookings %}
+              <div class="upcoming-list">
+                {% for item in upcoming_bookings %}
+                  <div class="upcoming-item">
+                    <div class="upcoming-date">{{ item.check_in }}</div>
+                    <div>
+                      <strong>{{ item.guest_name }}</strong>
+                      <span>{{ item.cottage }} · {{ item.guests }} гост.</span>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="muted-mini">Подтверждённых будущих заездов пока нет.</p>
+            {% endif %}
+          </section>
+
+          <section class="side-panel">
+            <h2>Популярность размещения</h2>
+            {% if room_stats %}
+              <div class="room-stat-list">
+                {% for item in room_stats %}
+                  <div class="room-stat-item">
+                    <div class="room-stat-top">
+                      <strong>{{ item.cottage }}</strong>
+                      <span>{{ item.count }} заяв.</span>
+                    </div>
+                    <div class="room-progress">
+                      {% set progress_width = (item.count / max_room_count * 100)|round(0) %}
+                      <span style="width: {{ progress_width }}%;"></span>
+                    </div>
+                    <small>{{ '{:,}'.format(item.amount).replace(',', ' ') }} ₽</small>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="muted-mini">Статистика появится после первой заявки.</p>
+            {% endif %}
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script>
+    const AUTO_REFRESH_INTERVAL = 30000; // 30 секунд
+
+    function isUserEditing() {
+      const activeElement = document.activeElement;
+
+      if (!activeElement) {
+        return false;
+      }
+
+      const editableTags = ['INPUT', 'TEXTAREA', 'SELECT'];
+
+      return editableTags.includes(activeElement.tagName);
+    }
+
+    setInterval(() => {
+      if (!isUserEditing()) {
+        window.location.reload();
+      }
+    }, AUTO_REFRESH_INTERVAL);
+  </script>
+</body>
+</html>

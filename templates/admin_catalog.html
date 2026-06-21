@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Размещение и услуги — Ёлы-Палы</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favorite.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="admin-body admin-body-pro">
+  <main class="admin-dashboard pro-dashboard">
+    <aside class="admin-sidebar pro-sidebar">
+      <div class="admin-brand-mini pro-brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Ёлы-Палы">
+        <div>
+          <strong>Ёлы-Палы</strong>
+          <span>Управление сайтом</span>
+        </div>
+      </div>
+
+      <nav class="admin-menu pro-menu">
+        <a href="{{ url_for('admin_panel') }}"><span class="menu-dot"></span> Заявки</a>
+        <a class="active" href="{{ url_for('admin_catalog') }}"><span class="menu-dot"></span> Размещение и услуги</a>
+        <a href="{{ url_for('index') }}"><span class="menu-dot"></span> Открыть сайт</a>
+        <a href="{{ url_for('admin_logout') }}"><span class="menu-dot"></span> Выйти</a>
+      </nav>
+
+      <div class="sidebar-user-card">
+        <div class="user-avatar">{{ (session.get('admin_username', 'A')[:1] or 'A')|upper }}</div>
+        <div>
+          <strong>{{ session.get('admin_username', 'Администратор') }}</strong>
+          <span>Активная сессия</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="admin-content pro-content catalog-admin-content">
+      <header class="pro-admin-header catalog-header">
+        <div>
+          <span class="eyebrow">Контент сайта</span>
+          <h1>Размещение, услуги и цены</h1>
+          <p>Здесь можно менять карточки домиков и номеров, стоимость проживания, дополнительные услуги и цены без редактирования кода.</p>
+        </div>
+        <div class="pro-header-actions">
+          <a class="btn btn-secondary" href="{{ url_for('admin_panel') }}">К заявкам</a>
+          <a class="btn btn-primary" href="{{ url_for('index') }}#cottages">Посмотреть на сайте</a>
+        </div>
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-wrap admin-flashes">
+            {% for category, message in messages %}
+              <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <section class="catalog-shortcuts">
+        <a href="#photos-management">Фотографии</a>
+        <a href="#rooms-management">Домики и номера</a>
+        <a href="#services-management">Услуги</a>
+        <a href="#new-room-form">Добавить размещение</a>
+        <a href="#new-service-form">Добавить услугу</a>
+      </section>
+
+      <section class="catalog-section" id="photos-management">
+        <div class="catalog-section-head">
+          <div>
+            <span class="eyebrow">Фотографии</span>
+            <h2>Загрузка и управление фото</h2>
+            <p>Загруженные изображения можно выбрать в карточках домиков и номеров. Также их можно вывести в галерее на клиентской странице.</p>
+          </div>
+        </div>
+
+        <article class="catalog-edit-card upload-card">
+          <div class="catalog-section-head compact-head">
+            <div>
+              <h3>Загрузить новую фотографию</h3>
+              <p>Поддерживаются PNG, JPG, JPEG и WEBP. Размер файла — до 8 МБ.</p>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('upload_photo_admin') }}" enctype="multipart/form-data" class="catalog-form upload-photo-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="catalog-form-grid two-cols">
+              <label><span>Название для галереи</span><input name="title" placeholder="Например: Домик у леса"></label>
+              <label><span>Порядок в галерее</span><input type="number" min="0" name="photo_sort_order" value="50"></label>
+            </div>
+            <label><span>Файл фотографии</span><input type="file" name="photo" accept="image/png,image/jpeg,image/webp" required></label>
+            <label class="admin-check-line"><input type="checkbox" name="add_to_gallery" value="1" checked><span>Сразу добавить фотографию в галерею сайта</span></label>
+            <button class="btn btn-primary" type="submit">Загрузить фотографию</button>
+          </form>
+        </article>
+
+        <article class="catalog-edit-card new-item-card">
+          <div class="catalog-section-head compact-head">
+            <div>
+              <h3>Добавить существующий файл в галерею</h3>
+              <p>Подходит, если файл уже используется в карточке размещения, но его нужно показать ещё и в галерее.</p>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('add_existing_gallery_photo_admin') }}" class="catalog-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="catalog-form-grid two-cols">
+              <label><span>Название</span><input name="title" placeholder="Название фотографии" required></label>
+              <label><span>Порядок</span><input type="number" min="0" name="sort_order" value="50"></label>
+            </div>
+            <label><span>Файл</span>
+              <select name="image" required>
+                {% for image in image_files %}
+                  <option value="{{ image }}">{{ image }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <button class="btn btn-secondary" type="submit">Добавить в галерею</button>
+          </form>
+        </article>
+
+        <div class="photo-admin-grid">
+          {% for photo in gallery_photos %}
+          <article class="photo-admin-card {% if not photo.is_active %}inactive-item{% endif %}">
+            <div class="photo-admin-preview">
+              <img src="{{ url_for('static', filename=photo.image) }}" alt="{{ photo.title }}">
+            </div>
+            <form method="post" action="{{ url_for('save_gallery_photo_admin') }}" class="catalog-form">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="photo_id" value="{{ photo.id }}">
+              <div class="catalog-form-grid two-cols">
+                <label><span>Название</span><input name="title" value="{{ photo.title }}" required></label>
+                <label><span>Порядок</span><input type="number" min="0" name="sort_order" value="{{ photo.sort_order }}"></label>
+              </div>
+              <label><span>Файл</span>
+                <select name="image">
+                  {% for image in image_files %}
+                    <option value="{{ image }}" {% if image == photo.image %}selected{% endif %}>{{ image }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <label class="admin-check-line"><input type="checkbox" name="is_active" value="1" {% if photo.is_active %}checked{% endif %}><span>Показывать в галерее</span></label>
+              <button class="btn btn-primary" type="submit">Сохранить фото</button>
+            </form>
+            <form class="catalog-delete-form" method="post" action="{{ url_for('delete_gallery_photo_admin', photo_id=photo.id) }}" onsubmit="return confirm('Удалить фотографию из галереи? Файл останется в папке сайта.');">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <button class="quick-action delete" type="submit">Убрать из галереи</button>
+            </form>
+          </article>
+          {% else %}
+          <div class="empty-state photo-empty-state">
+            <strong>В галерее пока нет фотографий</strong>
+            <span>Загрузите первое изображение через форму выше.</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="catalog-section" id="rooms-management">
+        <div class="catalog-section-head">
+          <div>
+            <span class="eyebrow">Размещение</span>
+            <h2>Домики, номера и цены</h2>
+            <p>Эти данные отображаются на клиентской странице в блоках «Размещение» и «Цены», а также используются при расчёте бронирования.</p>
+          </div>
+        </div>
+
+        <div class="catalog-card-grid">
+          {% for room in rooms %}
+          <article class="catalog-edit-card {% if not room.is_active %}inactive-item{% endif %}">
+            <div class="catalog-card-top">
+              <div class="catalog-preview-img">
+                <img src="{{ url_for('static', filename=room.image) }}" alt="{{ room.name }}">
+              </div>
+              <div>
+                <span class="status-badge {% if room.is_active %}status-confirmed{% else %}status-rejected{% endif %}">{{ 'На сайте' if room.is_active else 'Скрыто' }}</span>
+                <h3>{{ room.name }}</h3>
+                <p>{{ room.description }}</p>
+              </div>
+            </div>
+
+            <form method="post" action="{{ url_for('save_room_admin') }}" class="catalog-form">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="original_name" value="{{ room.name }}">
+
+              <div class="catalog-form-grid two-cols">
+                <label><span>Название</span><input name="name" value="{{ room.name }}" required></label>
+                <label><span>Бейдж</span><input name="badge" value="{{ room.badge }}" required></label>
+                <label><span>Гостей</span><input type="number" min="1" name="capacity" value="{{ room.capacity }}" required></label>
+                <label><span>Порядок</span><input type="number" min="0" name="sort_order" value="{{ room.sort_order }}"></label>
+                <label><span>Пн–Чт, ₽</span><input type="number" min="0" name="weekday_price" value="{{ room.weekday_price }}" required></label>
+                <label><span>Пт–Вс, ₽</span><input type="number" min="0" name="weekend_price" value="{{ room.weekend_price }}" required></label>
+              </div>
+
+              <label><span>Фотография</span>
+                <select name="image">
+                  {% for image in image_files %}
+                    <option value="{{ image }}" {% if image == room.image %}selected{% endif %}>{{ image }}</option>
+                  {% endfor %}
+                </select>
+                <small class="field-hint">Новые изображения загружаются в разделе «Фотографии» выше.</small>
+              </label>
+
+              <label><span>Описание</span><textarea name="description" rows="3" required>{{ room.description }}</textarea></label>
+              <label><span>Удобства, каждое с новой строки</span><textarea name="amenities" rows="4">{{ room.amenities_text }}</textarea></label>
+
+              <label class="admin-check-line">
+                <input type="checkbox" name="is_active" value="1" {% if room.is_active %}checked{% endif %}>
+                <span>Показывать на клиентской странице</span>
+              </label>
+
+              <button class="btn btn-primary" type="submit">Сохранить</button>
+            </form>
+            <form class="catalog-delete-form" method="post" action="{{ url_for('delete_room_admin', room_name=room.name) }}" onsubmit="return confirm('Удалить или скрыть вариант размещения «{{ room.name }}»?');">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <button class="quick-action delete" type="submit">Удалить</button>
+            </form>
+          </article>
+          {% endfor %}
+        </div>
+
+        <article class="catalog-edit-card new-item-card" id="new-room-form">
+          <div class="catalog-section-head compact-head">
+            <div>
+              <h3>Добавить новый вариант размещения</h3>
+              <p>После сохранения карточка появится на сайте и в форме бронирования.</p>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('save_room_admin') }}" class="catalog-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="original_name" value="">
+            <div class="catalog-form-grid two-cols">
+              <label><span>Название</span><input name="name" placeholder="Например: Коттедж" required></label>
+              <label><span>Бейдж</span><input name="badge" placeholder="Например: Новый" value="Размещение" required></label>
+              <label><span>Гостей</span><input type="number" min="1" name="capacity" value="4" required></label>
+              <label><span>Порядок</span><input type="number" min="0" name="sort_order" value="50"></label>
+              <label><span>Пн–Чт, ₽</span><input type="number" min="0" name="weekday_price" value="0" required></label>
+              <label><span>Пт–Вс, ₽</span><input type="number" min="0" name="weekend_price" value="0" required></label>
+            </div>
+            <label><span>Фотография</span>
+              <select name="image">
+                {% for image in image_files %}
+                  <option value="{{ image }}">{{ image }}</option>
+                {% endfor %}
+              </select>
+              <small class="field-hint">Сначала загрузите фото в разделе «Фотографии», потом выберите его здесь.</small>
+            </label>
+            <label><span>Описание</span><textarea name="description" rows="3" placeholder="Кратко опишите домик или номер" required></textarea></label>
+            <label><span>Удобства</span><textarea name="amenities" rows="4" placeholder="до 4 гостей&#10;отопление&#10;мангальная зона"></textarea></label>
+            <label class="admin-check-line"><input type="checkbox" name="is_active" value="1" checked><span>Показывать на клиентской странице</span></label>
+            <button class="btn btn-primary" type="submit">Добавить размещение</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="catalog-section" id="services-management">
+        <div class="catalog-section-head">
+          <div>
+            <span class="eyebrow">Услуги</span>
+            <h2>Дополнительные услуги и цены</h2>
+            <p>Услуги могут отображаться на сайте и участвовать в форме бронирования. Цена учитывается в предварительном расчёте.</p>
+          </div>
+        </div>
+
+        <div class="catalog-card-grid service-management-grid">
+          {% for service in services %}
+          <article class="catalog-edit-card {% if not service.is_active %}inactive-item{% endif %}">
+            <div class="catalog-card-top service-card-top">
+              <div class="catalog-service-icon"><i class="{{ service.icon }}"></i></div>
+              <div>
+                <span class="status-badge {% if service.is_active %}status-confirmed{% else %}status-rejected{% endif %}">{{ 'Активна' if service.is_active else 'Скрыта' }}</span>
+                <h3>{{ service.name }}</h3>
+                <p>{{ service.description }}</p>
+              </div>
+            </div>
+
+            <form method="post" action="{{ url_for('save_service_admin') }}" class="catalog-form">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="original_code" value="{{ service.code }}">
+
+              <div class="catalog-form-grid two-cols">
+                <label><span>Код</span><input name="code" value="{{ service.code }}" required></label>
+                <label><span>Название</span><input name="name" value="{{ service.name }}" required></label>
+                <label><span>Цена, ₽</span><input type="number" min="0" name="price" value="{{ service.price }}"></label>
+                <label><span>Расчёт</span>
+                  <select name="price_type">
+                    <option value="fixed" {% if service.price_type == 'fixed' %}selected{% endif %}>фиксированная</option>
+                    <option value="per_guest_night" {% if service.price_type == 'per_guest_night' %}selected{% endif %}>за гостя/ночь</option>
+                    <option value="free" {% if service.price_type == 'free' %}selected{% endif %}>бесплатно</option>
+                    <option value="custom" {% if service.price_type == 'custom' %}selected{% endif %}>по согласованию</option>
+                  </select>
+                </label>
+                <label><span>Иконка Font Awesome</span><input name="icon" value="{{ service.icon }}"></label>
+                <label><span>Порядок</span><input type="number" min="0" name="sort_order" value="{{ service.sort_order }}"></label>
+              </div>
+
+              <label><span>Описание</span><textarea name="description" rows="3" required>{{ service.description }}</textarea></label>
+
+              <div class="admin-check-grid">
+                <label class="admin-check-line"><input type="checkbox" name="is_active" value="1" {% if service.is_active %}checked{% endif %}><span>Активна</span></label>
+                <label class="admin-check-line"><input type="checkbox" name="display_on_site" value="1" {% if service.display_on_site %}checked{% endif %}><span>Показывать в блоке услуг</span></label>
+                <label class="admin-check-line"><input type="checkbox" name="available_in_booking" value="1" {% if service.available_in_booking %}checked{% endif %}><span>Добавить в форму бронирования</span></label>
+              </div>
+
+              <button class="btn btn-primary" type="submit">Сохранить</button>
+            </form>
+            <form class="catalog-delete-form" method="post" action="{{ url_for('delete_service_admin', service_code=service.code) }}" onsubmit="return confirm('Удалить услугу «{{ service.name }}»?');">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <button class="quick-action delete" type="submit">Удалить</button>
+            </form>
+          </article>
+          {% endfor %}
+        </div>
+
+        <article class="catalog-edit-card new-item-card" id="new-service-form">
+          <div class="catalog-section-head compact-head">
+            <div>
+              <h3>Добавить новую услугу</h3>
+              <p>Код должен быть латиницей, например: gazebo, dinner, snowmobile.</p>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('save_service_admin') }}" class="catalog-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="original_code" value="">
+            <div class="catalog-form-grid two-cols">
+              <label><span>Код</span><input name="code" placeholder="gazebo" required></label>
+              <label><span>Название</span><input name="name" placeholder="Беседка" required></label>
+              <label><span>Цена, ₽</span><input type="number" min="0" name="price" value="0"></label>
+              <label><span>Расчёт</span>
+                <select name="price_type">
+                  <option value="fixed">фиксированная</option>
+                  <option value="per_guest_night">за гостя/ночь</option>
+                  <option value="free">бесплатно</option>
+                  <option value="custom">по согласованию</option>
+                </select>
+              </label>
+              <label><span>Иконка Font Awesome</span><input name="icon" value="fa-solid fa-circle"></label>
+              <label><span>Порядок</span><input type="number" min="0" name="sort_order" value="50"></label>
+            </div>
+            <label><span>Описание</span><textarea name="description" rows="3" placeholder="Краткое описание услуги" required></textarea></label>
+            <div class="admin-check-grid">
+              <label class="admin-check-line"><input type="checkbox" name="is_active" value="1" checked><span>Активна</span></label>
+              <label class="admin-check-line"><input type="checkbox" name="display_on_site" value="1" checked><span>Показывать в блоке услуг</span></label>
+              <label class="admin-check-line"><input type="checkbox" name="available_in_booking" value="1" checked><span>Добавить в форму бронирования</span></label>
+            </div>
+            <button class="btn btn-primary" type="submit">Добавить услугу</button>
+          </form>
+        </article>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

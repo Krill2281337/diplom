@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ёлы-Палы — база отдыха</title>
+  <meta name="description" content="База отдыха Ёлы-Палы: размещение, услуги, карта, онлайн-заявка и удобное бронирование." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favorite.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="#home" aria-label="Ёлы-Палы — на главную">
+          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип базы отдыха Ёлы-Палы" class="brand-logo">
+          <div class="brand-copy">
+            <span class="brand-name">Ёлы-Палы</span>
+            <span class="brand-subtitle">база отдыха</span>
+          </div>
+        </a>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Открыть меню">
+          <span></span><span></span><span></span>
+        </button>
+
+        <nav class="nav" id="siteNav">
+          <a href="#home">Главная</a>
+          <a href="#about">О базе</a>
+          <a href="#cottages">Размещение</a>
+          <a href="#prices">Цены</a>
+          <a href="#services">Услуги</a>
+          <a href="#gallery">Галерея</a>
+          <a href="#location">Как добраться</a>
+          <a href="#contacts">Контакты</a>
+        </nav>
+
+        <div class="header-actions">
+          <a class="header-phone" href="tel:+73432900707">
+            <i class="fa-solid fa-phone"></i>
+            <span>+7 (343) 290-07-07</span>
+          </a>
+          <button class="btn btn-primary header-book-btn" id="bookNow">Оставить заявку</button>
+        </div>
+      </div>
+    </header>
+
+    {% set flashed_messages = get_flashed_messages(with_categories=true) %}
+    {% if flashed_messages %}
+      <div class="container flash-wrap booking-result-wrap" id="booking-result">
+        {% for category, message in flashed_messages %}
+          <div class="flash-message flash-{{ category }} {% if category == 'success' %}booking-success-message{% endif %}">
+            {% if category == 'success' %}
+              <strong>Заявка принята</strong>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <main>
+      <section class="hero" id="home">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">Комфортный отдых круглый год</span>
+            <h1>Отдых на природе рядом с Екатеринбургом</h1>
+            <p class="hero-text">
+              Уютные домики и номера, баня, береговая зона и спокойная атмосфера для отдыха с семьёй, друзьями или небольшой компанией.
+            </p>
+
+            <div class="hero-metrics">
+              <div class="metric">
+                <strong>{{ rooms|length }}</strong>
+                <span>варианта размещения</span>
+              </div>
+              <div class="metric">
+                <strong>до 5</strong>
+                <span>гостей в номере</span>
+              </div>
+              <div class="metric">
+                <strong>60 км</strong>
+                <span>от Екатеринбурга</span>
+              </div>
+            </div>
+
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#cottages">Выбрать размещение</a>
+              <button class="btn btn-secondary" type="button" onclick="openBookingModal()">Забронировать</button>
+            </div>
+
+            <div class="hero-trust-row">
+              <span><i class="fa-solid fa-circle-check"></i> предварительная стоимость сразу в форме</span>
+              <span><i class="fa-solid fa-circle-check"></i> подтверждение администратором</span>
+              <span><i class="fa-solid fa-circle-check"></i> проверка занятых дат</span>
+            </div>
+          </div>
+
+          <div class="hero-panel hero-visual-panel">
+            <div class="hero-visual-card">
+              <img src="{{ url_for('static', filename='img/bereg.png') }}" alt="Береговая зона базы отдыха Ёлы-Палы">
+              <div class="hero-visual-shade"></div>
+              <div class="hero-visual-content">
+                <span class="card-label">Популярный выбор</span>
+                <h3>Отдых у воды и леса</h3>
+                <p>Подберите домик или номер, рассчитайте стоимость и отправьте предварительную заявку за пару минут.</p>
+              </div>
+              <div class="hero-floating-card top-card">
+                <strong>от 3 500 ₽</strong>
+                <span>стоимость за ночь</span>
+              </div>
+              <div class="hero-floating-card bottom-card">
+                <strong>10:00–22:00</strong>
+                <span>ежедневно на связи</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block about-section" id="about">
+        <div class="container about-showcase">
+          <div class="about-photo-card">
+            <img src="{{ url_for('static', filename='img/terra.png') }}" alt="Территория базы отдыха Ёлы-Палы">
+            <div class="about-photo-badge">
+              <strong>Ёлы-Палы</strong>
+              <span>лес, вода и уютные домики рядом с городом</span>
+            </div>
+          </div>
+
+          <div class="about-content-card">
+            <span class="eyebrow">О базе отдыха</span>
+            <h2>Загородный отдых без лишней суеты</h2>
+            <p class="section-lead left-text">
+              «Ёлы-Палы» — база отдыха для семейных выходных, встреч с друзьями и небольших праздников на природе. Здесь можно остановиться в домике или номере, сходить в баню, провести вечер у мангала и спокойно отдохнуть вдали от городского шума.
+            </p>
+            <p>
+              На территории предусмотрены зоны для прогулок, парковка, береговая зона и места для отдыха на свежем воздухе. Информация о размещении, ценах и услугах собрана на сайте, поэтому подходящий вариант можно выбрать заранее и сразу оставить заявку на нужные даты.
+            </p>
+
+            <div class="about-highlight-grid">
+              <div class="about-highlight">
+                <i class="fa-solid fa-house-chimney-window"></i>
+                <span>Домики и номера</span>
+              </div>
+              <div class="about-highlight">
+                <i class="fa-solid fa-fire-burner"></i>
+                <span>Баня и мангальные зоны</span>
+              </div>
+              <div class="about-highlight">
+                <i class="fa-solid fa-tree"></i>
+                <span>Лесная территория</span>
+              </div>
+              <div class="about-highlight">
+                <i class="fa-solid fa-water"></i>
+                <span>Отдых у воды</span>
+              </div>
+            </div>
+
+            <div class="about-actions">
+              <a class="btn btn-primary" href="#cottages">Посмотреть размещение</a>
+              <a class="btn btn-secondary" href="#location">Как добраться</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="advantages-section section-block">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Преимущества</span>
+            <h2>Почему гостям удобно у нас</h2>
+          </div>
+          <div class="advantages-grid">
+            <article class="info-card">
+              <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+              <h3>Удобное расположение</h3>
+              <p>60 км от Екатеринбурга и всего 4 км от Заречного.</p>
+            </article>
+            <article class="info-card">
+              <div class="info-icon"><i class="fa-solid fa-square-parking"></i></div>
+              <h3>Бесплатная парковка</h3>
+              <p>Оборудованные парковочные места на территории базы отдыха.</p>
+            </article>
+            <article class="info-card">
+              <div class="info-icon"><i class="fa-solid fa-water"></i></div>
+              <h3>Пляж и береговая зона</h3>
+              <p>Освещённая и охраняемая территория у воды для спокойного отдыха.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block lodging-section" id="cottages">
+        <div class="container">
+          <div class="section-heading section-heading-flex">
+            <div>
+              <span class="eyebrow">Размещение</span>
+              <h2>Подберите подходящий вариант</h2>
+            </div>
+            <div class="toolbar">
+              <label class="control search-control">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="text" placeholder="Поиск по названию или вместимости">
+              </label>
+              <label class="control select-control">
+                <select id="capacityFilter">
+                  <option value="all">Любая вместимость</option>
+                  <option value="3">От 3 гостей</option>
+                  <option value="4">От 4 гостей</option>
+                  <option value="5">От 5 гостей</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="results-row">
+            <p class="results-text" id="resultsCount">Показано вариантов: 4</p>
+            <button class="link-button" id="showFavorites">Показать только избранное</button>
+          </div>
+
+          <div class="cottages-grid" id="cottageGrid">
+            {% for room_name, room in rooms.items() %}
+            <article class="cottage-card" data-name="{{ room_name }}" data-capacity="{{ room.capacity }}" data-price="{{ room.weekday_price }}">
+              <div class="cottage-media">
+                <img src="{{ url_for('static', filename=room.image) }}" alt="{{ room_name }} на базе отдыха Ёлы-Палы">
+                <button class="favorite-btn" aria-label="Добавить в избранное">
+                  <i class="fa-regular fa-heart"></i>
+                </button>
+                <span class="media-badge {% if room_name == 'Люкс' %}accent{% endif %}">{{ room.badge }}</span>
+              </div>
+              <div class="cottage-content">
+                <div class="cottage-head">
+                  <div>
+                    <h3>{{ room_name }}</h3>
+                    <p>{{ room.description }}</p>
+                  </div>
+                  <strong>от {{ '{:,}'.format(room.weekday_price).replace(',', ' ') }} ₽</strong>
+                </div>
+                <ul class="feature-list">
+                  {% for amenity in room.amenities %}
+                  <li><i class="fa-solid fa-check"></i> {{ amenity }}</li>
+                  {% endfor %}
+                </ul>
+                <table class="price-table">
+                  <tr><th>Период</th><th>Цена</th></tr>
+                  <tr><td>Пн–Чт</td><td>{{ '{:,}'.format(room.weekday_price).replace(',', ' ') }} ₽</td></tr>
+                  <tr><td>Пт–Вс</td><td>{{ '{:,}'.format(room.weekend_price).replace(',', ' ') }} ₽</td></tr>
+                  <tr><td>Макс. гостей</td><td>{{ room.capacity }}</td></tr>
+                </table>
+                <button class="btn btn-primary cc-book-btn" data-cottage="{{ room_name }}">Забронировать</button>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block prices-section" id="prices">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Цены</span>
+            <h2>Стоимость размещения</h2>
+            <p class="section-lead">Итоговая стоимость автоматически рассчитывается в форме бронирования с учётом дат, количества гостей и дополнительных услуг.</p>
+          </div>
+          <div class="prices-table-wrap">
+            <table class="full-price-table">
+              <thead>
+                <tr>
+                  <th>Вариант</th>
+                  <th>Вместимость</th>
+                  <th>Пн–Чт</th>
+                  <th>Пт–Вс</th>
+                  <th>Действие</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for room_name, room in rooms.items() %}
+                <tr>
+                  <td><strong>{{ room_name }}</strong></td>
+                  <td>до {{ room.capacity }} гостей</td>
+                  <td>{{ '{:,}'.format(room.weekday_price).replace(',', ' ') }} ₽</td>
+                  <td>{{ '{:,}'.format(room.weekend_price).replace(',', ' ') }} ₽</td>
+                  <td><button class="link-button cc-book-btn" data-cottage="{{ room_name }}">Оставить заявку</button></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block booking-steps-section" id="booking-steps">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Бронирование</span>
+            <h2>Как оформить заявку</h2>
+            <p class="section-lead">Процесс сделан простым: посетитель выбирает вариант размещения, указывает даты, видит предварительную стоимость и отправляет заявку администратору.</p>
+          </div>
+          <div class="booking-steps-grid">
+            <article class="step-card">
+              <div class="step-number">01</div>
+              <h3>Выберите размещение</h3>
+              <p>На странице собраны домики и номера с фотографиями, вместимостью, удобствами и ценами.</p>
+            </article>
+            <article class="step-card">
+              <div class="step-number">02</div>
+              <h3>Укажите даты</h3>
+              <p>Форма проверяет доступность выбранного варианта и рассчитывает количество ночей.</p>
+            </article>
+            <article class="step-card">
+              <div class="step-number">03</div>
+              <h3>Дождитесь подтверждения</h3>
+              <p>После отправки заявки администратор свяжется с гостем и уточнит детали бронирования.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block services-section" id="services">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Дополнительные услуги</span>
+            <h2>Чем можно дополнить отдых</h2>
+          </div>
+          <div class="services-grid">
+            {% for service in service_cards %}
+            <article class="service-card">
+              <div class="service-icon"><i class="{{ service.icon }}"></i></div>
+              <h3>{{ service.name }}</h3>
+              <p>{{ service.description }}</p>
+              <div class="service-price-label">{{ service_price_label(service) }}</div>
+            </article>
+            {% else %}
+            <article class="service-card">
+              <h3>Услуги временно не указаны</h3>
+              <p>Администратор может добавить услуги в панели управления.</p>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block gallery-section" id="gallery">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">Галерея</span>
+            <h2>Территория и атмосфера отдыха</h2>
+          </div>
+          <div class="gallery-grid">
+            {% for photo in gallery_photos %}
+            <button class="gallery-tile {% if loop.first %}gallery-a{% endif %}" data-title="{{ photo.title }}" data-image="{{ url_for('static', filename=photo.image) }}">
+              <img src="{{ url_for('static', filename=photo.image) }}" alt="{{ photo.title }}">
+              <span>{{ photo.title }}</span>
+            </button>
+            {% else %}
+            <div class="gallery-empty-card">
+              <strong>Фотографии скоро появятся</strong>
+              <span>Администратор может добавить их через панель управления.</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block cta-section">
+        <div class="container cta-box">
+          <div>
+            <span class="eyebrow eyebrow-light">Заявка</span>
+            <h2>Нужна консультация по размещению?</h2>
+            <p>Оставьте заявку или напишите нам в Мессенджер — поможем подобрать вариант проживания.</p>
+          </div>
+          <div class="cta-actions">
+            <button class="btn btn-light" onclick="openBookingModal()">Открыть форму</button>
+            <a class="btn btn-outline-light" href="https://api.whatsapp.com/send/?phone=79506401939&text=Здравствуйте!%20Хочу%20уточнить%20условия%20проживания." target="_blank" rel="noopener">Написать в Мессенджер</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block location-section" id="location">
+        <div class="container location-grid">
+          <div>
+            <div class="section-heading left-aligned">
+              <span class="eyebrow">Локация</span>
+              <h2>Как добраться</h2>
+              <p class="section-lead">Свердловская область, г.о. Заречный, база отдыха «Ёлы-Палы», зд. 6.</p>
+            </div>
+            <div class="contact-stack">
+              <div><i class="fa-solid fa-location-dot"></i> Удобный выезд из Екатеринбурга</div>
+              <div><i class="fa-solid fa-phone"></i> +7 (343) 290-07-07</div>
+              <div><i class="fa-solid fa-envelope"></i> riotur@internet.ru</div>
+            </div>
+          </div>
+          <div class="map-wrapper">
+            <iframe
+              src="https://yandex.ru/map-widget/v1/?from=mapframe&ll=60.800509%2C56.820787&mode=routes&rtext=56.828495%2C60.567211~56.821109%2C61.268981&rtt=auto&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D156359092877&source=mapframe&utm_source=mapframe&z=10.13"
+              width="100%"
+              height="100%"
+              frameborder="0"
+              aria-hidden="false"
+              title="Карта базы отдыха">
+            </iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block rules">
+  <div class="container">
+
+    <div class="section-heading">
+      <h2>Правила проживания</h2>
+      <p class="section-lead">Пожалуйста, ознакомьтесь с основными правилами перед бронированием</p>
+    </div>
+
+    <div class="rules-grid">
+
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fa-regular fa-clock"></i></div>
+        <h4>Заезд и выезд</h4>
+        <p>Заезд с 14:00, выезд до 12:00</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fa-regular fa-moon"></i></div>
+        <h4>Тишина</h4>
+        <p>Соблюдение тишины после 23:00</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fa-solid fa-paw"></i></div>
+        <h4>Животные</h4>
+        <p>Размещение по согласованию</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-icon"><i class="fa-solid fa-ban-smoking"></i></div>
+        <h4>Курение</h4>
+        <p>Только в отведённых местах</p>
+      </div>
+
+    </div>
+
+  </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="contacts">
+  <div class="container">
+
+    <div class="footer-grid">
+
+      <!-- ЛОГО + ОПИСАНИЕ -->
+      <div class="footer-brand">
+        <div class="brand">
+          <img src="{{ url_for('static', filename='img/logo.png') }}" class="brand-logo" alt="Логотип Ёлы-Палы">
+          <div class="brand-copy">
+            <span class="brand-name">Ёлы-Палы</span>
+            <span class="brand-subtitle">База отдыха</span>
+          </div>
+        </div>
+        <p class="footer-text">
+          Тихая и уютная база отдыха недалеко от Екатеринбурга.
+        </p>
+      </div>
+
+      <!-- КОНТАКТЫ -->
+      <div>
+        <h4>Контакты</h4>
+        <ul class="footer-list">
+          <li>+7 (343) 290-07-07</li>
+          <li>+7 (902) 409-07-07</li>
+          <li>riotur@internet.ru</li>
+          <li>Пн–Вс: 10:00–22:00</li>
+        </ul>
+      </div>
+      <!-- СОЦСЕТИ -->
+      <div>
+        <h4>Соцсети</h4>
+        <a href="https://vk.com/club232119990?from=groups" target="_blank" rel="noopener" class="social-link">
+          <img src="{{ url_for('static', filename='img/VK.png') }}" class="icon" alt="VK">
+          Группа ВКонтакте
+        </a>
+      </div>
+
+      <!-- ОТЗЫВЫ -->
+      <div class="footer-reviews">
+        <h4>Отзывы гостей</h4>
+
+        <div class="yandex-widget">
+          <iframe
+            src="https://yandex.ru/maps-reviews-widget/156359092877?comments"
+            width="100%"
+            height="250"
+            frameborder="0">
+          </iframe>
+        </div>
+
+        <a href="https://yandex.ru/maps/org/yely_paly/156359092877/"
+           target="_blank"
+           class="yandex-link">
+          Читать все отзывы →
+        </a>
+      </div>
+
+    </div>
+<div class="footer-policy">
+      <a href="{{ url_for('privacy_policy') }}">Политика конфиденциальности</a>
+    </div>
+    <div class="footer-bottom">
+      © 2025 Ёлы-Палы. Все права защищены.
+    </div>
+
+  </div>
+
+</footer>
+  </div>
+  <div class="modal" id="bookingModal" aria-hidden="true">
+    <div class="modal-content modal-large" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+      <div class="modal-header">
+        <h3 id="bookingTitle">Оставить заявку на бронирование</h3>
+        <button class="modal-close" id="modalClose" aria-label="Закрыть">×</button>
+      </div>
+      <div class="modal-body">
+        <form class="booking-form" id="bookingForm" method="post" action="{{ url_for('book') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div class="form-group">
+            <label for="cottageSelect">Вариант размещения</label>
+            <select id="cottageSelect" name="cottage" required>
+              <option value="" disabled selected>Выберите вариант</option>
+              {% for room_name in rooms.keys() %}
+              <option value="{{ room_name }}">{{ room_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-grid form-grid-3">
+            <div class="form-group">
+              <label for="checkinDate">Дата заезда</label>
+              <input type="date" id="checkinDate" name="check_in" required>
+            </div>
+            <div class="form-group">
+              <label for="checkoutDate">Дата выезда</label>
+              <input type="date" id="checkoutDate" name="check_out" required>
+            </div>
+            <div class="form-group">
+              <label for="guestsCount">Количество гостей</label>
+              <input type="number" id="guestsCount" name="guests" min="1" max="5" value="2" required>
+            </div>
+          </div>
+
+          <div class="booking-summary">
+            <div class="summary-item">
+              <span>Количество ночей</span>
+              <strong id="nightsPreview">—</strong>
+            </div>
+            <div class="summary-item summary-total">
+              <span>Предварительная стоимость</span>
+              <strong id="pricePreview">Выберите даты</strong>
+            </div>
+          </div>
+          <div class="availability-message" id="availabilityMessage">Выберите вариант размещения и даты, чтобы проверить доступность.</div>
+
+          <div class="extras-block">
+            <span class="extras-title">Дополнительные услуги</span>
+            {% for service in booking_services %}
+            <label class="checkbox-card">
+              <input type="checkbox" name="extras" value="{{ service.code }}">
+              <span>{{ service.name }} ({{ service_price_label(service) }})</span>
+            </label>
+            {% else %}
+            <p class="form-note">Дополнительные услуги пока не добавлены.</p>
+            {% endfor %}
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="guestName">Ваше имя</label>
+              <input type="text" id="guestName" name="guest_name" placeholder="Введите имя" required>
+            </div>
+            <div class="form-group">
+              <label for="guestPhone">Телефон</label>
+              <input type="tel" id="guestPhone" name="phone" placeholder="+7 (___) ___-__-__" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="commentField">Комментарий к заявке</label>
+            <textarea id="commentField" name="comment" rows="4" placeholder="Например: нужна баня вечером, заезд после 18:00"></textarea>
+          </div>
+
+          <label class="checkbox-card consent-card">
+            <input type="checkbox" name="personal_data_consent" value="yes" required>
+            <span>Я согласен на обработку персональных данных для оформления заявки и ознакомлен с <a href="{{ url_for('privacy_policy') }}" target="_blank" rel="noopener">политикой конфиденциальности</a>.</span>
+          </label>
+
+          <button type="submit" class="btn btn-primary btn-full">Отправить заявку</button>
+          <p class="form-note">После отправки заявки администратор свяжется с вами в ближайшее время для подтверждения деталей бронирования.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="gallery-modal" id="galleryModal" aria-hidden="true">
+    <div class="gallery-modal-inner">
+      <button class="gallery-close" id="galleryClose" aria-label="Закрыть">×</button>
+      <div class="gallery-preview" id="galleryPreviewText"></div>
+    </div>
+  </div>
+
+  <script>
+    window.roomPrices = {{ rooms|tojson }};
+    window.extraServices = {{ service_map|tojson }};
+    window.occupiedRanges = {{ occupied_ranges|tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+      </body>
+
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Политика конфиденциальности — Ёлы-Палы</title>
+  <meta name="description" content="Политика конфиденциальности сайта базы отдыха Ёлы-Палы." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favorite.png') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="{{ url_for('index') }}" aria-label="Ёлы-Палы — на главную">
+          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Логотип базы отдыха Ёлы-Палы" class="brand-logo">
+          <div class="brand-copy">
+            <span class="brand-name">Ёлы-Палы</span>
+            <span class="brand-subtitle">База отдыха</span>
+          </div>
+        </a>
+        <nav class="site-nav privacy-nav">
+          <a href="{{ url_for('index') }}">На главную</a>
+          <a href="{{ url_for('index') }}#contacts">Контакты</a>
+        </nav>
+        <button class="btn btn-primary" onclick="location.href='{{ url_for('index') }}#rooms'">Выбрать размещение</button>
+      </div>
+    </header>
+
+    <main class="privacy-page">
+      <section class="privacy-hero">
+        <div class="container">
+          <span class="eyebrow">Документ сайта</span>
+          <h1>Политика конфиденциальности</h1>
+          <p>Настоящая политика описывает порядок обработки персональных данных пользователей сайта базы отдыха «Ёлы-Палы».</p>
+        </div>
+      </section>
+
+      <section class="privacy-content container">
+        <article class="privacy-card">
+          <h2>1. Общие положения</h2>
+          <p>Настоящая политика конфиденциальности определяет порядок получения, хранения и использования персональных данных, которые пользователь передаёт при заполнении формы бронирования на сайте базы отдыха «Ёлы-Палы».</p>
+          <p>Использование сайта и отправка заявки означают согласие пользователя с условиями обработки персональных данных, указанными в данной политике.</p>
+        </article>
+
+        <article class="privacy-card">
+          <h2>2. Какие данные обрабатываются</h2>
+          <p>При оформлении заявки на бронирование могут обрабатываться следующие данные: имя пользователя, номер телефона, выбранный вариант размещения, даты заезда и выезда, количество гостей, выбранные дополнительные услуги и комментарий к заявке.</p>
+          <p>Сайт не запрашивает паспортные данные, банковские реквизиты и другую информацию, не требующуюся для предварительного оформления заявки.</p>
+        </article>
+
+        <article class="privacy-card">
+          <h2>3. Цели обработки данных</h2>
+          <p>Персональные данные используются для приёма и обработки заявки на бронирование, связи с клиентом, уточнения деталей проживания, подтверждения или отмены заявки, а также для внутреннего учёта обращений.</p>
+          <p>Данные не используются для целей, не связанных с обработкой заявки, и не передаются третьим лицам, за исключением случаев, предусмотренных законодательством Российской Федерации.</p>
+        </article>
+
+        <article class="privacy-card">
+          <h2>4. Хранение и защита данных</h2>
+          <p>Данные заявок сохраняются в базе данных сайта и доступны только администратору через защищённую административную панель. Доступ к панели управления ограничен логином и паролем.</p>
+          <p>Для повышения безопасности на сайте используются проверка вводимых данных, защита форм от CSRF-запросов, хэширование пароля администратора и параметризованные запросы к базе данных.</p>
+        </article>
+
+        <article class="privacy-card">
+          <h2>5. Права пользователя</h2>
+          <p>Пользователь имеет право уточнить информацию по своей заявке, запросить изменение контактных данных или попросить удалить заявку, связавшись с администрацией базы отдыха по контактам, указанным на сайте.</p>
+        </article>
+
+        <article class="privacy-card">
+          <h2>6. Контактная информация</h2>
+          <p>По вопросам обработки персональных данных можно обратиться к администрации базы отдыха «Ёлы-Палы» по телефону +7 (343) 290-07-07 или по электронной почте riotur@internet.ru.</p>
+        </article>
+
+        <div class="privacy-actions">
+          <a class="btn btn-primary" href="{{ url_for('index') }}">Вернуться на сайт</a>
+          <a class="btn btn-secondary" href="{{ url_for('index') }}#contacts">Контакты</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
