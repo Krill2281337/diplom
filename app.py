@@ -126,7 +126,7 @@ DEFAULT_SERVICES: list[dict[str, Any]] = [
     {
         'code': 'consultation',
         'name': 'Быстрая связь',
-        'description': 'Можно оставить комментарий к заявке и уточнить детали по телефону или WhatsApp.',
+        'description': 'Можно оставить комментарий к заявке и уточнить детали по телефону или в Месседжер.',
         'price': 0,
         'price_type': 'custom',
         'icon': 'fa-solid fa-comments',
